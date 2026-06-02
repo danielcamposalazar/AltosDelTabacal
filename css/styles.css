@@ -5,6 +5,7 @@
     --color-negro: #655a4c;
 }
 
+
 body {
     font-family: var(--font-texto);
     background-color: white;
@@ -257,6 +258,80 @@ h3 {
     border-radius: 15px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     overflow: hidden;
+}
+
+.btn-musica-flotante {
+    position: fixed;
+
+    right: 80px;
+    bottom: 220px;
+
+    width: 60px;
+    height: 60px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #b78676;
+    color: white;
+
+    font-size: 28px;
+    cursor: pointer;
+
+    box-shadow: 0 8px 25px rgba(0,0,0,0.20);
+
+    z-index: 9999;
+
+    transition: all 0.3s ease;
+
+    animation: pulsoMusica 3s infinite;
+}
+
+.btn-musica-flotante:hover {
+    transform: scale(1.1);
+}
+
+.btn-musica-flotante::before,
+.btn-musica-flotante::after {
+    content: "";
+
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    width: 60px;
+    height: 60px;
+
+    border-radius: 50%;
+
+    border: 2px solid rgba(183, 134, 118, 0.5);
+
+    transform: translate(-50%, -50%);
+
+    animation: ondaMusica 2.5s infinite;
+
+    pointer-events: none;
+}
+
+.btn-musica-flotante::after {
+    animation-delay: 1.2s;
+}
+
+@keyframes ondaMusica {
+
+    0% {
+        width: 60px;
+        height: 60px;
+        opacity: 0.8;
+    }
+
+    100% {
+        width: 110px;
+        height: 110px;
+        opacity: 0;
+    }
+
 }
 
 .whatsapp-btn {

@@ -14,15 +14,13 @@ miniaturas.forEach(function (imagen) {
 // ===============================
 // REPRODUCTOR DE MÚSICA
 // ===============================
-
 const playlist = ["audio/cancion1.aac", "audio/cancion2.aac"];
 
 let indiceActual = 0;
-let musicaIniciada = false;
 
 const reproductor = new Audio();
 
-reproductor.volume = 0.1;
+reproductor.volume = 0.2;
 
 reproductor.src = playlist[indiceActual];
 
@@ -38,21 +36,17 @@ reproductor.addEventListener("ended", function () {
   reproductor.play();
 });
 
-// Iniciar música una sola vez
-function iniciarMusica() {
-  if (musicaIniciada) return;
+// Botón de música
+const btnMusica = document.getElementById("btnMusica");
 
-  musicaIniciada = true;
+btnMusica.addEventListener("click", function () {
+  if (reproductor.paused) {
+    reproductor.play();
 
-  reproductor
-    .play()
-    .then(() => {
-      console.log("Música iniciada");
-    })
-    .catch((error) => {
-      console.error("Error reproduciendo audio:", error);
-    });
-}
+    btnMusica.innerHTML = "❚❚";
+  } else {
+    reproductor.pause();
 
-// Primera interacción del usuario
-document.addEventListener("click", iniciarMusica);
+    btnMusica.innerHTML = "♫";
+  }
+});
