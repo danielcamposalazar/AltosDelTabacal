@@ -88,9 +88,44 @@ nav{min-height:64px}.brand strong{font-size:19px}nav .right .btn{padding:10px 11
 .floating{display:flex;position:fixed;bottom:16px;left:16px;right:16px;z-index:12;justify-content:center;box-shadow:0 6px 25px #23352d44;border:2px solid #fff}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}}
+#controlMusica {
+    position: fixed;
+    right: 16px;
+    bottom: 24px;
+    z-index: 100;
+    padding: 11px 16px;
+    border: 1px solid #d6dfcf;
+    border-radius: 30px;
+    background: rgba(255, 255, 250, 0.95);
+    color: #35593f;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+    backdrop-filter: blur(8px);
+  }
+
+  /* Evita tapar el botón flotante de WhatsApp */
+  @media (max-width: 700px) {
+    #controlMusica {
+      bottom: 85px;
+    }
+  }
 </style>
+<audio
+  id="musicaAmbiente"
+  src="assets/musica-ambiente.aac"
+  preload="none"
+  loop>
+</audio>
 </head>
 <body>
+    <button
+      id="controlMusica"
+      type="button"
+      aria-pressed="false">
+      ♫ Activar música
+    </button>
 <header><nav class="wrap" aria-label="Navegación principal"><a class="brand" href="#inicio"><strong>Altos del Tabacal</strong><span>La Vega · Cundinamarca</span></a><div class="right"><a href="#opciones">Opciones de compra</a><a href="#fotografias">Fotografías</a><a class="btn btn-green" href="https://wa.me/573007750463?text=Hola%2C%20encontr%C3%A9%20Altos%20del%20Tabacal%20y%20deseo%20informaci%C3%B3n%20sobre%20las%20propiedades%20en%20venta." target="_blank" rel="noopener noreferrer">WhatsApp ↗</a></div></nav></header>
 <main id="inicio">
 <section class="wrap hero" aria-labelledby="hero-title">
@@ -115,4 +150,117 @@ nav{min-height:64px}.brand strong{font-size:19px}nav .right .btn{padding:10px 11
 </main>
 <footer><div class="wrap"><span>© 2026 Altos del Tabacal · Venta directa · La Vega, Cundinamarca</span><span>Fotografías: brochure de la propiedad · <a href="brochure-altos-del-tabacal.pdf" target="_blank" rel="noopener">Brochure PDF</a></span></div></footer>
 <a class="floating btn btn-green" href="https://wa.me/573007750463?text=Hola%2C%20encontr%C3%A9%20Altos%20del%20Tabacal%20y%20deseo%20informaci%C3%B3n%20sobre%20las%20propiedades%20en%20venta." target="_blank" rel="noopener noreferrer" aria-label="Solicitar información por WhatsApp">Consultar por WhatsApp ↗</a>
-</body></html>
+</body>
+
+<script>
+(() => {
+  const musica = document.getElementById("musicaAmbiente");
+  const boton = document.getElementById("controlMusica");
+
+  const VOLUMEN_MAXIMO = 0.14;
+  let animacion = null;
+  let sonidoActivo = false;
+  let primeraInteraccion = true;
+
+  function actualizarBoton(activa) {
+    boton.textContent = activa
+      ? "♫ Silenciar música"
+      : "♫ Activar música";
+
+    boton.setAttribute("aria-pressed", String(activa));
+  }
+
+  // Transición suave del volumen
+  function cambiarVolumen(destino, duracion, alTerminar) {
+    cancelAnimationFrame(animacion);
+
+    const inicial = musica.volume;
+    const comienzo = performance.now();
+
+    function animar(ahora) {
+      const progreso = Math.min(
+        (ahora - comienzo) / duracion, 1
+      );
+
+      const suavizado = 1 - Math.pow(1 - progreso, 3);
+
+      musica.volume = Math.max(0, Math.min(1,
+        inicial + (destino - inicial) * suavizado
+      ));
+
+      if (progreso < 1) {
+        animacion = requestAnimationFrame(animar);
+      } else if (alTerminar) {
+        alTerminar();
+      }
+    }
+
+    animacion = requestAnimationFrame(animar);
+  }
+
+  async function iniciarMusica() {
+    primeraInteraccion = false;
+    sonidoActivo = true;
+
+    if (!musica.paused) {
+      cambiarVolumen(VOLUMEN_MAXIMO, 1500);
+      actualizarBoton(true);
+      return;
+    }
+
+    musica.volume = 0;
+
+    try {
+      await musica.play();
+
+      if (!sonidoActivo) {
+        musica.pause();
+        return;
+      }
+
+      cambiarVolumen(VOLUMEN_MAXIMO, 2500);
+      actualizarBoton(true);
+
+    } catch (error) {
+      sonidoActivo = false;
+      actualizarBoton(false);
+    }
+  }
+
+  function detenerMusica() {
+    primeraInteraccion = false;
+    sonidoActivo = false;
+    actualizarBoton(false);
+
+    cambiarVolumen(0, 900, () => {
+      if (!sonidoActivo) musica.pause();
+    });
+  }
+
+  // Comienza con la primera interacción del visitante
+  function intentarInicio(evento) {
+    if (!primeraInteraccion) return;
+    if (evento.target.closest("#controlMusica")) return;
+
+    iniciarMusica();
+  }
+
+  document.addEventListener("click", intentarInicio);
+
+  document.addEventListener("keydown", (evento) => {
+    if (evento.key === "Enter" || evento.key === " ") {
+      intentarInicio(evento);
+    }
+  });
+
+  // Control manual
+  boton.addEventListener("click", () => {
+    if (sonidoActivo) {
+      detenerMusica();
+    } else {
+      iniciarMusica();
+    }
+  });
+})();
+</script>
+</html>
